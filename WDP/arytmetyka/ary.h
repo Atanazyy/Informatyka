@@ -6,8 +6,8 @@
 typedef struct wartosc 
 {
   bool czyPusty;
-  bool czyAnty; //jezeli prawda to przedstawia przedzial R-(poc, kon) 
-  double poc, kon; 
+  bool czyAnty; //jezeli prawda to przedstawia przedzial R-(poc, kon), jeżeli falsz to [poc, kon] 
+  double poc, kon;
 } wartosc;
 
 /* Implicite zakładamy, że wszystkie argumenty typu double są liczbami  */

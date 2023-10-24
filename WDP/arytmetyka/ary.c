@@ -1,17 +1,12 @@
+//Atnazy Gawrysiak
 #include <math.h>
 #include <stdio.h>
 #include "stdbool.h"
+#include "ary.h"
 
 const double EPS = 1e-10;
 
-typedef struct wartosc 
-{
-  bool czyPusty;
-  bool czyAnty; //jezeli prawda to przedstawia przedzial R-(poc, kon) 
-  double poc, kon; 
-} wartosc;
-
-void zamien(wartosc *a, wartosc *b) //zamienia dwie wartosci
+void zamienWartosci(wartosc *a, wartosc *b) //zamienia dwie wartosci
 {
     wartosc _a = *a;
     wartosc _b = *b;
@@ -61,12 +56,12 @@ wartosc nic() //zwraca przedzial pusty
 
 wartosc wartosc_dokladnosc(double x, double p) //zwraca x +- p%
 {
-    double del = fabs(p * x / 100);
+    double delta = fabs(p * x / 100);
     wartosc wyn;
     wyn.czyPusty = false;
     wyn.czyAnty = false;
-    wyn.poc = x - del;
-    wyn.kon = x + del;
+    wyn.poc = x - delta;
+    wyn.kon = x + delta;
     return wyn;
 }
 
@@ -140,7 +135,7 @@ wartosc plus(wartosc a, wartosc b) //dodaje dwie liczby
         return wyn;
     }
     if(b.czyAnty) //od teraz a zawsze jest anty przedzialem, a b nie
-        zamien(&a, &b);
+        zamienWartosci(&a, &b);
     wyn.czyAnty = true;
     wyn.poc = a.poc + b.kon;
     wyn.kon = a.kon + b.poc;
@@ -150,46 +145,37 @@ wartosc plus(wartosc a, wartosc b) //dodaje dwie liczby
     return wyn;
 }
 
-wartosc razy(wartosc a, wartosc b) //mnozy a i b
+wartosc razyAnty(wartosc a, wartosc b) //mnozy dwa niepuste anty przedzialy
 {
     wartosc wyn;
-    if(a.czyPusty || b.czyPusty)
-        return nic();
     wyn.czyPusty = false;
-    if(a.czyAnty && b.czyAnty) //mnozenie dwoch anty przedzialow
-    {
-        if(in_wartosc(a, 0) || in_wartosc(b, 0))
-            return wszystkie();
-        wyn.czyAnty = true;
-        wyn.poc = fmax(a.poc * b.kon, a.kon * b.poc);
-        wyn.kon = fmin(a.poc * b.poc, a.kon * b.kon);
-        if(wyn.poc + EPS >= wyn.kon)
-            return wszystkie();
-        return wyn;
-    }
-    if(!a.czyAnty && !b.czyAnty) //mnozenie dwoch zwyklych przedzialow
-    {
-        if((czyZero(a.poc) && czyZero(a.kon)) || (czyZero(b.poc) && czyZero(b.kon)))
-            return wartosc_dokladna(0);
-        wyn.czyAnty = false;
-        wyn.poc = fmin(fmin(a.poc * b.poc, a.poc * b.kon),fmin(a.kon * b.poc, a.kon * b.kon));
-        wyn.kon = fmax(fmax(a.poc * b.poc, a.poc * b.kon),fmax(a.kon * b.poc, a.kon * b.kon));
-        return wyn;
-    }
     wyn.czyAnty = true;
-    if(b.czyAnty) //od teraz a zawsze jest anty przedzialem, a b zwyklym przedzialem
-        zamien(&a, &b);
-    if(in_wartosc(b, 0))
+    if(in_wartosc(a, 0) || in_wartosc(b, 0))
         return wszystkie();
-    if(b.kon < 0) // od teraz b ma tylko dodatnie liczby
-    {
-        zamienDouble(&b.poc, &b.kon);
-        zamienDouble(&a.poc, &a.kon);
-        b.poc *= -1;
-        b.kon *= -1;
-        a.poc *= -1;
-        a.kon *= -1;
-    }
+    wyn.poc = fmax(a.poc * b.kon, a.kon * b.poc);
+    wyn.kon = fmin(a.poc * b.poc, a.kon * b.kon);
+    if(wyn.poc + EPS >= wyn.kon)
+        return wszystkie();
+    return wyn;
+}
+
+wartosc razyZwykle(wartosc a, wartosc b) //mnozy dwa niepuste zwykle przedzialy
+{
+    wartosc wyn;
+    wyn.czyPusty = false;
+    wyn.czyAnty = false;
+    if((czyZero(a.poc) && czyZero(a.kon)) || (czyZero(b.poc) && czyZero(b.kon)))
+        return wartosc_dokladna(0);
+    wyn.poc = fmin(fmin(a.poc * b.poc, a.poc * b.kon),fmin(a.kon * b.poc, a.kon * b.kon));
+    wyn.kon = fmax(fmax(a.poc * b.poc, a.poc * b.kon),fmax(a.kon * b.poc, a.kon * b.kon));
+    return wyn;
+}
+
+wartosc antyRazyZwykly(wartosc a, wartosc b) //mnozy dwa przedzialy, pierwszy jest anty przedzialem drugi jest zwyklym jedynie z dodatnimi liczbami
+{
+    wartosc wyn;
+    wyn.czyPusty = false;
+    wyn.czyAnty = true;
     if(czyNiesk(b.kon)) //przypadek gdy b ma dowolnie duze liczby
     {
         if(a.poc >= EPS || a.kon <= -EPS)
@@ -215,61 +201,82 @@ wartosc razy(wartosc a, wartosc b) //mnozy a i b
     return wyn;
 }
 
-wartosc minus(wartosc a, wartosc b) //odejmuje od a b
+wartosc razy(wartosc a, wartosc b) //mnozy a i b
 {
-    wartosc minus = wartosc_dokladna(-1);
-    return plus(a, razy(minus, b));
+    if(a.czyPusty || b.czyPusty)
+        return nic();
+    if(a.czyAnty && b.czyAnty) //mnozenie dwoch anty przedzialow
+        return razyAnty(a, b);
+    if(!a.czyAnty && !b.czyAnty) //mnozenie dwoch zwyklych przedzialow
+        return razyZwykle(a, b);
+    if(b.czyAnty) //od teraz a zawsze jest anty przedzialem, a b zwyklym przedzialem
+        zamienWartosci(&a, &b);
+    if(in_wartosc(b, 0)) //jezeli b ma poczatek na lewo od zera i koniec na prawo
+        return wszystkie();
+    if(b.kon < 0) // od teraz b bedzie mialo tylko dodatnie liczby
+    {
+        zamienDouble(&b.poc, &b.kon);
+        zamienDouble(&a.poc, &a.kon);
+        b.poc *= -1;
+        b.kon *= -1;
+        a.poc *= -1;
+        a.kon *= -1;
+    }
+    return antyRazyZwykly(a, b);
 }
 
-wartosc odwrotnosc(wartosc a) //liczy odwrotnosc a
+wartosc minus(wartosc a, wartosc b) //odejmuje od a b
+{
+    wartosc minusJeden = wartosc_dokladna(-1);
+    return plus(a, razy(minusJeden, b));
+}
+
+wartosc odwrotnoscZwykla(wartosc a) //odwraca niepusty, niezerowy zwykly przedzial
 {
     wartosc wyn;
-    if(a.czyPusty)
-        return nic();
-    if(!a.czyAnty && czyZero(a.poc) && czyZero(a.kon)) //dzielenie przez 0
-        return nic();
     wyn.czyPusty = false;
-    if(!a.czyAnty) //jezeli a jest zwyklym przedzialem
-    {
-        if(czyNiesk(a.poc) && czyNiesk(a.kon))
-            return wszystkie();
-        if(czyZero(a.poc))
-        {
-            wyn.czyAnty = false;
-            wyn.poc = 1 / a.kon;
-            wyn.kon = HUGE_VAL;
-            return wyn;
-        }
-        if(czyZero(a.kon))
-        {
-            wyn.czyAnty = false;
-            wyn.poc = -HUGE_VAL;
-            wyn.kon = 1 / a.poc;
-            return wyn;
-        }
-        if(in_wartosc(a, 0))
-        {
-            wyn.czyAnty = true;
-            wyn.poc = 1 / a.poc;
-            wyn.kon = 1 / a.kon;
-            return wyn;
-        }
-        wyn.czyAnty = false;
-        wyn.poc = 1 / a.kon;
-        wyn.kon = 1 / a.poc;
-        return wyn;
-    }
-    //a jest antyprzedzialem
+    if(czyNiesk(a.poc) && czyNiesk(a.kon))
+        return wszystkie();
     if(czyZero(a.poc))
     {
         wyn.czyAnty = false;
+        wyn.poc = 1 / a.kon;
+        wyn.kon = HUGE_VAL;
+        return wyn;
+    }
+    if(czyZero(a.kon))
+    {
+        wyn.czyAnty = false;
+        wyn.poc = -HUGE_VAL;
+        wyn.kon = 1 / a.poc;
+        return wyn;
+    }
+    if(in_wartosc(a, 0))
+    {
+        wyn.czyAnty = true;
+        wyn.poc = 1 / a.poc;
+        wyn.kon = 1 / a.kon;
+        return wyn;
+    }
+    wyn.czyAnty = false;
+    wyn.poc = 1 / a.kon;
+    wyn.kon = 1 / a.poc;
+    return wyn;
+}
+
+wartosc odwrotnosAnty(wartosc a) //odwraca niepusty, niezerowy anty przedzial
+{
+    wartosc wyn;
+    wyn.czyPusty = false;
+    wyn.czyAnty = false;
+    if(czyZero(a.poc))
+    {
         wyn.poc = -HUGE_VAL;
         wyn.kon = 1 / a.kon;
         return wyn;
     }
     if(czyZero(a.kon))
     {
-        wyn.czyAnty = false;
         wyn.poc = 1 / a.poc;
         wyn.kon = HUGE_VAL;
         return wyn;
@@ -278,13 +285,23 @@ wartosc odwrotnosc(wartosc a) //liczy odwrotnosc a
     {
         wyn.poc = 1 / a.kon;
         wyn.kon = 1 / a.poc;
-        wyn.czyAnty = false;
         return wyn;
     }
-    wyn.czyAnty = false;
     wyn.poc = 1 / a.poc;
     wyn.kon = 1 / a.kon;
     return wyn;
+}
+
+wartosc odwrotnosc(wartosc a) //liczy odwrotnosc a
+{
+    if(a.czyPusty)
+        return nic();
+    if(!a.czyAnty && czyZero(a.poc) && czyZero(a.kon)) //dzielenie przez 0
+        return nic();
+    if(!a.czyAnty) //jezeli a jest zwyklym przedzialem
+        return odwrotnoscZwykla(a);
+    else //a jest antyprzedzialem
+        return odwrotnosAnty(a);
 }
 
 wartosc podzielic(wartosc a, wartosc b) //zwraca a / b
