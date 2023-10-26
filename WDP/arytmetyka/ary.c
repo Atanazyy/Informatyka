@@ -1,4 +1,4 @@
-//Atnazy Gawrysiak
+//Atanazy Gawrysiak
 #include <math.h>
 #include <stdio.h>
 #include "stdbool.h"
@@ -77,12 +77,7 @@ wartosc wartosc_od_do(double x, double y) //zwraca [x, y]
 
 wartosc wartosc_dokladna(double x) //zwraca [x, x]
 {
-    wartosc wyn;
-    wyn.czyPusty = false;
-    wyn.czyAnty = false;
-    wyn.poc = x;
-    wyn.kon = x;
-    return wyn;
+    return wartosc_dokladnosc(x, 0);
 }
 
 bool in_wartosc(wartosc w, double x) //zwraca prawde jezeli x \in w

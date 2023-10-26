@@ -1,3 +1,4 @@
 *.e
 *.in
 *.out
+tester.c
