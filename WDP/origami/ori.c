@@ -1,5 +1,5 @@
 //Atanazy Gawrysiak
-//code review ze Stefanem Świerczewskim
+//code review ze Stefanem Swierczewskim
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h> 
@@ -25,10 +25,10 @@ void zamien(double *a, double *b) //zamienia dwa double
     *a = _b;
 }
 
-zespkt odbij(zespkt P, zespkt A, zespkt B) //odbija P wzgledem AB, kod z geeksforgeeks
+zespkt odbij(zespkt P, zespkt A, zespkt B) //odbija P wzgledem AB, inspirowalem sie kodem z geeksforgeeks
 {
     zespkt Pt = P - A; 
-    zespkt Bt = B - A; //przesuniecie punktow tak aby A bylo w (0,0)
+    zespkt Bt = B - A; //przesuniecie punktow tak aby A bylo w (0, 0)
     zespkt Pr = Pt / Bt; //obrot tak, zeby AB byl poziomy
     return conj(Pr) * Bt + A; // odbicie wzgledem OX i odwrocenie poprzednich przeksztalcen
 }
@@ -59,7 +59,7 @@ int strona(zespkt P, zespkt A, zespkt B) //zwraca -1 jak P po lewej stronie AB, 
     return mn;
 }
 
-double odlkw(double x1, double y1, double x2, double y2) //zwaraca kwadrat odleglosci dwoch punktow
+double odlkw(double x1, double y1, double x2, double y2) //zwraca kwadrat odleglosci dwoch punktow
 {
     return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
 }
@@ -89,25 +89,25 @@ int licz(kartka tab[], int k, double x, double y) //liczy wynik dla punktu (x, y
 int main()
 {
     int n, q;
-    assert(scanf("%d%d", &n, &q) == 2);
+    assert(scanf("%d %d", &n, &q) == 2);
     kartka *tab = malloc(sizeof(kartka) * (size_t)(n + 9));
     for(int i = 1; i <= n; i++) //wczytywanie wejscia
     {
         kartka nowa;
         assert(scanf(" %c", &nowa.typ) == 1);
         if(nowa.typ == 'P')
-            assert(scanf("%lf%lf%lf%lf", &nowa.x1, &nowa.y1, &nowa.x2, &nowa.y2) == 4);
+            assert(scanf("%lf %lf %lf %lf", &nowa.x1, &nowa.y1, &nowa.x2, &nowa.y2) == 4);
         if(nowa.typ == 'K')
-            assert(scanf("%lf%lf%lf", &nowa.x1, &nowa.y1, &nowa.r) == 3);
+            assert(scanf("%lf %lf %lf", &nowa.x1, &nowa.y1, &nowa.r) == 3);
         if(nowa.typ == 'Z')
-            assert(scanf("%d%lf%lf%lf%lf", &nowa.k, &nowa.x1, &nowa.y1, &nowa.x2, &nowa.y2) == 5);
+            assert(scanf("%d %lf %lf %lf %lf", &nowa.k, &nowa.x1, &nowa.y1, &nowa.x2, &nowa.y2) == 5);
         tab[i] = nowa;
     }
     while(q--)
     {
         int k;
         double x, y;
-        assert(scanf("%d%lf%lf", &k, &x, &y) == 3);
+        assert(scanf("%d %lf %lf", &k, &x, &y) == 3);
         printf("%d\n", licz(tab, k, x, y));
     }
 }
