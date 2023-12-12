@@ -23,11 +23,16 @@ lista stworz() //tworzy nowa kolejke
     return wyn;
 }
 
+void norm(interesant *x, interesant *y) //zamienia wskazniki sasiadow x, tak aby na sas2 byl wskaznik na y
+{
+    if(x->sas1 == y)
+        swap(x->sas1, x->sas2);
+}
+
 void dodaj(int k, interesant *x) //dodaje intersanta x na koniec kolejki k
 {
     interesant *przed = tab[k].kon->sas2; //interesant stajacy na koncu k
-    if(przed->sas1 == tab[k].kon)
-        swap(przed->sas1, przed->sas2);
+    norm(przed, tab[k].kon);
     przed->sas2 = tab[k].kon->sas2 = x;
     x->sas1 = przed;
     x->sas2 = tab[k].kon;
@@ -63,12 +68,10 @@ interesant *obsluz(int k) //zwraca wskaznik na pierwszego interesanta w kolejce 
     if(pusta(k))
         return NULL;
     interesant *pie = tab[k].poc->sas2; //interesant ktorego nalezy obsluzyc
-    if(pie->sas1 == tab[k].poc)
-        swap(pie->sas1, pie->sas2);
+    norm(pie, tab[k].poc);
     interesant *dru = pie->sas1; //interesant ktory byl drugi a teraz bedzie pierwszy
     tab[k].poc->sas2 = dru;
-    if(dru->sas1 == pie)
-        swap(dru->sas1, dru->sas2);
+    norm(dru, pie);
     dru->sas2 = tab[k].poc;
     return pie;
 }
@@ -77,10 +80,8 @@ void zmiana_okienka(interesant *i, int k) //przenosi interesanta do innej kolejk
 {
     interesant *obok1 = i->sas1; //interesant ktory byl z jednej strony i
     interesant *obok2 = i->sas2; //interesant ktory byl z drugiej strony i 
-    if(obok1->sas1 == i)
-        swap(obok1->sas1, obok1->sas2);
-    if(obok2->sas1 == i)
-        swap(obok2->sas1, obok2->sas2);
+    norm(obok1, i);
+    norm(obok2, i);
     obok1->sas2 = obok2;
     obok2->sas2 = obok1;
     dodaj(k, i);
@@ -92,15 +93,12 @@ void zamkniecie_okienka(int k1, int k2) //przenosi wszystkich z okienka k1 na ko
         return;
     interesant *ost2 = tab[k2].kon->sas2; //ostatni interesant w kolejce k2
     interesant *pie1 = tab[k1].poc->sas2; //pierwszy interesant w kolejce k1
-    if(ost2->sas1 == tab[k2].kon)
-        swap(ost2->sas1, ost2->sas2);
-    if(pie1->sas1 == tab[k1].poc)
-        swap(pie1->sas1, pie1->sas2);
+    norm(ost2, tab[k2].kon);
+    norm(pie1, tab[k1].poc);
     pie1->sas2 = ost2;
     ost2->sas2 = pie1;
     interesant *ost1 = tab[k1].kon->sas2; //ostatni interesant w kolejce k1, teraz bedzie tez ostatnim w kolejce k2
-    if(ost1->sas1 == tab[k1].kon)
-        swap(ost1->sas1, ost1->sas2);
+    norm(ost1, tab[k1].kon);
     ost1->sas2 = tab[k2].kon;
     tab[k2].kon->sas2 = ost1;
     tab[k1].poc->sas2 = tab[k1].kon;
@@ -112,11 +110,9 @@ void naczelnik(int k) //odwraca kolejke
     if(pusta(k) || tab[k].poc->sas2 == tab[k].kon->sas2)
         return;
     interesant *pie = tab[k].poc->sas2; //pierwszy interesant, teraz bedzie ostatnim
-    if(pie->sas1 == tab[k].poc)
-        swap(pie->sas1, pie->sas2);
+    norm(pie, tab[k].poc);
     interesant *ost = tab[k].kon->sas2; //ostatni interesant, teraz bedzie pierwszym
-    if(ost->sas1 == tab[k].kon)
-        swap(ost->sas1, ost->sas2);
+    norm(ost, tab[k].kon);
     pie->sas2 = tab[k].kon;
     ost->sas2 = tab[k].poc;
     tab[k].poc->sas2 = ost;
@@ -137,15 +133,13 @@ vector <interesant *> fast_track(interesant *i1, interesant *i2) //obsluguje nat
     {
         vec1.push_back(akt1);
         vec2.push_back(akt2);
-        if(akt1->sas1 == pop1)
-            swap(akt1->sas1, akt1->sas2);
+        norm(akt1, pop1);
         if(akt1->sas1 != NULL)
         {
             pop1 = akt1;
             akt1 = akt1->sas1;
         }
-        if(akt2->sas1 == pop2)
-            swap(akt2->sas1, akt2->sas2);
+        norm(akt2, pop2);
         if(akt2->sas1 != NULL)
         {
             pop2 = akt2;
@@ -159,13 +153,10 @@ vector <interesant *> fast_track(interesant *i1, interesant *i2) //obsluguje nat
         swap(pop1, pop2);
         swap(vec1, vec2);
     }
-    if(akt1->sas1 == pop1)
-        swap(akt1->sas1, akt1->sas2);
+    norm(akt1, pop1);
     interesant *ost1 = akt1->sas1; //sasiad i2, ktory nie zostanie obsluzony
-    if(ost1->sas1 == i2)
-        swap(ost1->sas1, ost1->sas2);
-    if(pie1->sas1 == i1)
-        swap(pie1->sas1, pie1->sas2);
+    norm(ost1, i2);
+    norm(pie1, i1);
     pie1->sas2 = ost1;
     ost1->sas2 = pie1;
     vec1.push_back(akt1);
@@ -182,8 +173,7 @@ vector <interesant *> zamkniecie_urzedu() //zamyka urzad
         while(akt != kol.kon)
         {
             wyn.push_back(akt);
-            if(akt->sas1 == pop)
-                swap(akt->sas1, akt->sas2);
+            norm(akt, pop);
             pop = akt;
             akt = akt->sas1;
         }
