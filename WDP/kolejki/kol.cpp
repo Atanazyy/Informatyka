@@ -1,3 +1,5 @@
+//Atanazy Gawrysiak
+//code review z Grzegorzem Juszczykiem
 #include <bits/stdc++.h>
 #include "kol.h"
 
