@@ -7,13 +7,13 @@ struct wie
 {
     int poz;
     long long minw, maxw;
-    wie *l, *p;
+    shared_ptr <wie> l, p;
 };
 
-vector <wie*> drzewa;
+vector <shared_ptr <wie> > drzewa;
 vector <long long> tab;
 
-void dodaj(wie *v, wie *odp)
+void dodaj(shared_ptr <wie> v, shared_ptr <wie> odp)
 {
     if(v->minw == v->maxw)
         return;
@@ -22,7 +22,7 @@ void dodaj(wie *v, wie *odp)
     {
         if(odp != NULL)
             v->p = odp->p;
-        wie *nowy = (wie*)malloc(sizeof(wie));
+        shared_ptr <wie> nowy = make_shared <wie>();
         v->l = nowy;
         nowy->minw = v->minw;
         nowy->maxw = sr;
@@ -37,7 +37,7 @@ void dodaj(wie *v, wie *odp)
     {
         if(odp != NULL)
             v->l = odp->l;
-        wie *nowy = (wie*)malloc(sizeof(wie));
+        shared_ptr <wie> nowy = make_shared <wie>();
         v->p = nowy;
         nowy->minw = sr + 1;
         nowy->maxw = v->maxw;
@@ -52,7 +52,7 @@ void dodaj(wie *v, wie *odp)
 
 void pushBack(int x)
 {
-    wie *v = (wie*)malloc(sizeof(wie));
+    shared_ptr <wie> v = make_shared <wie>();
     drzewa.push_back(v);
     tab.push_back((long long)x + INT_MAX);
     v->poz = (int)tab.size() - 1;
@@ -62,7 +62,7 @@ void pushBack(int x)
     dodaj(v, drzewa[drzewa.size() - 2]);
 }
 
-int szukaj(wie *v, long long lo, long long hi)
+int szukaj(shared_ptr <wie> v, long long lo, long long hi)
 {
     if(v == NULL)
         return -1;
