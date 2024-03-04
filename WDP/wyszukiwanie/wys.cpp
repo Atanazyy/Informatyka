@@ -29,7 +29,7 @@ int rozw(vector<int> vec) //zwraca w ile pytan potrzeba aby odpowiedziec i zapis
         stan[vec] = {0, 0};
         return 0;
     }
-    stan[vec].first = 1000;
+    stan[vec].first = 100000;
     for(int i = 2; i <= n; i++) //sprawdzanie co sie stanie jak zadamy pytanie w i
     {
         vector<int> tak, nie;
