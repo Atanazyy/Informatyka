@@ -1,0 +1,21 @@
+(listen to n)
+let n be 100000
+let i be 2
+while i is as low as n
+let array at i be 1
+build i up
+
+let sum be 0
+let i be 2
+while i is as low as n
+if 1 is array at i
+let j be i + i
+while j is as low as n
+let array at j be 0
+let j be j + i
+
+let sum be sum + i
+
+build i up
+
+say sum
