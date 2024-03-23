@@ -1,7 +1,3 @@
-#include <iostream>
-
-using namespace std;
-
 const int n = 1e8;
 bool tab[n + 1];
 
@@ -19,5 +15,5 @@ int main()
       }
     }
   }
-  printf("%lld", sum);
+  //printf("%lld", sum);
 }

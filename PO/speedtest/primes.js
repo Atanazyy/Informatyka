@@ -12,5 +12,5 @@ for (let i = 2; i <= n; i++) {
         sum += i;
     }
 }
-console.log(sum);
+//console.log(sum);
 
