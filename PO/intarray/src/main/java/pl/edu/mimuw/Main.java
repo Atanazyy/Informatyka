@@ -1,53 +1,37 @@
 package pl.edu.mimuw;
 
-import java.util.Scanner;
-
 public class Main {
 
     public static void main(String[] args) {
-        IntArray testArray = new IntArray();
-        Scanner scanner = new Scanner(System.in);
-        while (true) {
-            int nextOperation = scanner.nextInt();
-            switch (nextOperation) {
-                case 1: {
-                    int newValue = scanner.nextInt();
-                    testArray = testArray.addElement(newValue);
-                    break;
-                }
-                case 2: {
-                    testArray = testArray.removeElement();
-                    break;
-                }
-                case 3: {
-                    int index = scanner.nextInt();
-                    int newValue = scanner.nextInt();
-                    testArray = testArray.changeElement(index, newValue);
-                    break;
-                }
-                case 4: {
-                    int index = scanner.nextInt();
-                    System.out.println(testArray.readElement(index));
-                    break;
-                }
-                case 5: {
-                    System.out.println(testArray.getArraySize());
-                    break;
-                }
-                case 6: {
-                    testArray.printArray();
-                    break;
-                }
-            }
-        }
-    }
-}
+        IntArray array1 = new IntArray();
+        array1 = array1.pushed(9);
+        array1 = array1.unshifted(6);
+        System.out.println(array1);
 
-/*
-    1 - add element
-    2 - remove element
-    3 - change value at index
-    4 - read from index
-    5 - get length
-    6 - print array
- */
+        int[] array = new int[]{0, 2, 4};
+        IntArray array2 = new IntArray(3, array);
+        array2 = array2.reversed();
+        System.out.println(array2);
+
+        IntArray array3 = array1.concat(array2);
+        System.out.println(array3);
+        System.out.println(array3.at(0));
+        array3 = array3.with(0, 666);
+        System.out.println(array3.at(0));
+        System.out.println(array3.getLength());
+        System.out.println(array3.indexOf());
+        System.out.println(array3.lastIndexOf());
+        System.out.println(array3.includes(666));
+        System.out.println(array3.includes(-1));
+
+        array3 = array3.popped().shifted();
+        System.out.println(array3);
+
+        array3 = array3.filled(0, 2, 999);
+        System.out.println(array3);
+
+        IntArray array4 = new IntArray(0, 0, 7);
+        System.out.println(array4);
+    }
+
+}
