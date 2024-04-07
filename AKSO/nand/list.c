@@ -83,7 +83,7 @@ void pop(list_t *l, node_t* removed_node) {
     }
     removed_node->prev->next = removed_node->next;
     removed_node->next->prev = removed_node->prev;
-    l->size++;
+    l->size--;
     free(removed_node);
 }
 

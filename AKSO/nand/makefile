@@ -17,7 +17,6 @@ nand_example.o: nand_example.c nand.h memory_tests.h
 	gcc $(CFLAGS) -c -o $@ nand_example.c
 nand_example: nand_example.o libnand.so
 	gcc $(CFLAGS) -L. -o $@ $< -lnand
-	
 
 clean:
 	rm -f nand.o

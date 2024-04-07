@@ -22,6 +22,7 @@ struct nand {
 };
 
 nand_t* nand_new(unsigned n) {
+    errno = 0;
     nand_t* new_nand = malloc(sizeof(nand_t) + sizeof(pair) * n);
     if (new_nand == NULL) {
         errno = ENOMEM;
@@ -45,6 +46,7 @@ nand_t* nand_new(unsigned n) {
 };
 
 void nand_delete(nand_t *g) {
+    errno = 0;
     if (g == NULL) {
         return;
     }
@@ -68,6 +70,7 @@ void nand_delete(nand_t *g) {
 }
 
 int nand_connect_nand(nand_t *g_out, nand_t *g_in, unsigned k) {
+    errno = 0;
     if (g_in == NULL || g_out == NULL || (int)k >= g_in->k) {
         errno = EINVAL;
         return -1;
@@ -79,6 +82,9 @@ int nand_connect_nand(nand_t *g_out, nand_t *g_in, unsigned k) {
     }
     if (g_in->in[k].gate != NULL) {
         pop(g_in->in[k].gate->out, g_in->in[k].position);
+        if(g_in->in[k].gate->signal != NULL) {
+            nand_delete(g_in->in[k].gate);
+        }
     }
     g_in->in[k].position = new_position;
     g_in->in[k].gate = g_out;
@@ -86,6 +92,7 @@ int nand_connect_nand(nand_t *g_out, nand_t *g_in, unsigned k) {
 }
 
 int nand_connect_signal(bool const *s, nand_t *g, unsigned k) {
+    errno = 0;
     if (s == NULL || g == NULL || (int)k >= g->k) {
         errno = EINVAL;
         return -1;
@@ -99,11 +106,14 @@ int nand_connect_signal(bool const *s, nand_t *g, unsigned k) {
     int ret = nand_connect_nand(new_nand, g, k);
     if(ret == -1) {
         nand_delete(new_nand);
+        errno = ENOMEM;
+        return -1;
     }
     return ret;
 }
 
 ssize_t nand_fan_out(nand_t const *g) {
+    errno = 0;
     if (g == NULL) {
         errno = EINVAL;
         return -1;
@@ -112,6 +122,7 @@ ssize_t nand_fan_out(nand_t const *g) {
 }
 
 void* nand_input(nand_t const *g, unsigned k) {
+    errno = 0;
     if (g == NULL || (int)k >= g->k) {
         errno = EINVAL;
         return NULL;
@@ -126,6 +137,7 @@ void* nand_input(nand_t const *g, unsigned k) {
 }
 
 nand_t* nand_output(nand_t const *g, ssize_t k) {
+    errno = 0;
     node_t *ptr = get_first(g->out);
     for (int i = 0; i <= k; i++) {
         ptr = get_next(ptr);
@@ -199,6 +211,7 @@ void clear_info(list_t* all_gates) {
 }
 
 ssize_t nand_evaluate(nand_t **g, bool *s, size_t m) {
+    errno = 0;
     if(g == NULL || s == NULL || m == 0) {
         errno = EINVAL;
         return -1;
