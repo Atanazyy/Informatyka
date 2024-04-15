@@ -5,48 +5,29 @@
 #include "nand.h"
 #include "list.h"
 
-struct node {
-    node_t* prev;
-    node_t* next;
-    nand_t* nand;
-    int k; 
+struct node
+{
+    node_t *prev;
+    node_t *next;
+    nand_t *nand;
+    int k; // to wich input gate is connected
 };
 
-struct list {
+struct list
+{
     int size;
-    node_t* first;
-    node_t* last;
+    node_t *first;
+    node_t *last;
 };
 
-node_t* get_first(list_t* l) {
-    return l->first;
-}
-
-node_t* get_last(list_t* l) {
-    return l->last;
-}
-
-node_t* get_next(node_t* n) {
-    return n->next;
-}
-
-nand_t* get_nand(node_t* n) {
-    return n->nand;
-}
-
-int get_k(node_t* n) {
-    return n->k;
-}
-
-int get_size(list_t* l) {
-    return l->size;
-}
-
-list_t* init() {
-    list_t* new_list = malloc(sizeof(list_t));
-    node_t* first = malloc(sizeof(node_t));
-    node_t* last = malloc(sizeof(node_t));
-    if (new_list == NULL || first == NULL || last == NULL) {
+// create new list
+list_t *init()
+{
+    list_t *new_list = malloc(sizeof(list_t));
+    node_t *first = malloc(sizeof(node_t));
+    node_t *last = malloc(sizeof(node_t));
+    if (new_list == NULL || first == NULL || last == NULL)
+    {
         free(new_list);
         free(first);
         free(last);
@@ -62,9 +43,12 @@ list_t* init() {
     return new_list;
 }
 
-node_t* push(list_t *l, nand_t* nand, int k) {
-    node_t* new_node = malloc(sizeof(node_t));
-    if (new_node == NULL) {
+// add element to the list
+node_t *push(list_t *l, nand_t *nand, int k)
+{
+    node_t *new_node = malloc(sizeof(node_t));
+    if (new_node == NULL)
+    {
         return NULL;
     }
     new_node->next = l->last;
@@ -77,8 +61,11 @@ node_t* push(list_t *l, nand_t* nand, int k) {
     return new_node;
 }
 
-void pop(list_t *l, node_t* removed_node) {
-    if (l == NULL || removed_node == NULL || l->size == 0) {
+// delete element from the list
+void pop(list_t *l, node_t *removed_node)
+{
+    if (l == NULL || removed_node == NULL || l->size == 0)
+    {
         return;
     }
     removed_node->prev->next = removed_node->next;
@@ -87,15 +74,49 @@ void pop(list_t *l, node_t* removed_node) {
     free(removed_node);
 }
 
-void destroy_node(node_t* n) {
-    if(n == NULL) {
+void destroy_node(node_t *n)
+{
+    if (n == NULL)
+    {
         return;
     }
     destroy_node(n->next);
     free(n);
 }
 
-void destroy_list(list_t* l) {
+// delete list and free the memory
+void destroy_list(list_t *l)
+{
     destroy_node(l->first);
     free(l);
+}
+
+node_t *get_first(list_t *l)
+{
+    return l->first;
+}
+
+node_t *get_last(list_t *l)
+{
+    return l->last;
+}
+
+node_t *get_next(node_t *n)
+{
+    return n->next;
+}
+
+nand_t *get_nand(node_t *n)
+{
+    return n->nand;
+}
+
+int get_k(node_t *n)
+{
+    return n->k;
+}
+
+int get_size(list_t *l)
+{
+    return l->size;
 }
