@@ -169,14 +169,14 @@ nand_t *nand_output(nand_t const *g, ssize_t k)
 {
     errno = 0;
     node_t *ptr = get_first(g->out);
-    for (int i = 0; i <= k; i++)
+    for (unsigned i = 0; i <= k; i++)
     {
         ptr = get_next(ptr);
     }
     return get_nand(ptr);
 }
 
-int max_int(int a, int b)
+static ssize_t max_ssize_t(ssize_t a, ssize_t b)
 {
     if (a > b)
     {
@@ -189,7 +189,7 @@ int max_int(int a, int b)
 }
 
 // calculate critical path length and boolean signal of output for single nand gate
-int evaluate_single(nand_t *g, list_t *all_gates)
+static ssize_t evaluate_single(nand_t *g, list_t *all_gates)
 {
     if (g == NULL)
     {
@@ -231,7 +231,7 @@ int evaluate_single(nand_t *g, list_t *all_gates)
             {
                 g->value = true;
             }
-            g->path_len = max_int(g->path_len, g->in[i].gate->path_len + 1);
+            g->path_len = max_ssize_t(g->path_len, g->in[i].gate->path_len + 1);
         }
         else
         {
@@ -239,7 +239,7 @@ int evaluate_single(nand_t *g, list_t *all_gates)
             {
                 g->value = true;
             }
-            g->path_len = max_int(g->path_len, 1);
+            g->path_len = max_ssize_t(g->path_len, 1);
         }
     }
     g->is_being_evaluated = false;
@@ -248,7 +248,7 @@ int evaluate_single(nand_t *g, list_t *all_gates)
 }
 
 // free the memory and setup for next evaluation
-void clear_info(list_t *all_gates)
+static void clear_info(list_t *all_gates)
 {
     node_t *ptr = get_first(all_gates);
     while (get_next(ptr) != get_last(all_gates))
@@ -274,7 +274,7 @@ ssize_t nand_evaluate(nand_t **g, bool *s, size_t m)
         errno = ENOMEM;
         return -1;
     }
-    unsigned max_path = 0;
+    ssize_t max_path = 0;
     for (unsigned i = 0; i < m; i++)
     {
         if (g[i] == NULL)
@@ -289,7 +289,7 @@ ssize_t nand_evaluate(nand_t **g, bool *s, size_t m)
             return -1;
         }
         s[i] = g[i]->value;
-        max_path = max_int(max_path, g[i]->path_len);
+        max_path = max_ssize_t(max_path, g[i]->path_len);
     }
     clear_info(all_gates);
     return max_path;

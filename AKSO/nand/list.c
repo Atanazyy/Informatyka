@@ -10,12 +10,12 @@ struct node
     node_t *prev;
     node_t *next;
     nand_t *nand;
-    int k; // to wich input gate is connected
+    unsigned k; // to wich input gate is connected
 };
 
 struct list
 {
-    int size;
+    unsigned size;
     node_t *first;
     node_t *last;
 };
@@ -44,7 +44,7 @@ list_t *init()
 }
 
 // add element to the list
-node_t *push(list_t *l, nand_t *nand, int k)
+node_t *push(list_t *l, nand_t *nand, unsigned k)
 {
     node_t *new_node = malloc(sizeof(node_t));
     if (new_node == NULL)
@@ -74,7 +74,7 @@ void pop(list_t *l, node_t *removed_node)
     free(removed_node);
 }
 
-void destroy_node(node_t *n)
+static void destroy_node(node_t *n)
 {
     if (n == NULL)
     {
@@ -111,12 +111,12 @@ nand_t *get_nand(node_t *n)
     return n->nand;
 }
 
-int get_k(node_t *n)
+unsigned get_k(node_t *n)
 {
     return n->k;
 }
 
-int get_size(list_t *l)
+unsigned get_size(list_t *l)
 {
     return l->size;
 }
