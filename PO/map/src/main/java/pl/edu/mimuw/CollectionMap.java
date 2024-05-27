@@ -68,7 +68,7 @@ public class CollectionMap<K, V> implements Map<K, V> {
     @Override
     public void putAll(Map<? extends K, ? extends V> m) {
         for (Map.Entry<? extends K, ? extends V> entry : m.entrySet()) {
-            list.add(new AbstractMap.SimpleEntry<>(entry.getKey(), entry.getValue()));
+            put(entry.getKey(), entry.getValue());
         }
     }
 

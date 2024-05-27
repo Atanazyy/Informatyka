@@ -35,5 +35,7 @@ public class Main {
         System.out.println(map.remove(1));
         Map<Integer, Object> map3 = new CollectionMap<>();
         System.out.println(map3.equals(map));
+        System.out.println(map);
+        System.out.println(map.equals(map2));
     }
 }
