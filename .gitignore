@@ -1,5 +1,6 @@
 *.e
 *.in
 *.out
+*.o
 tester.c
 .vscode
