@@ -14,6 +14,7 @@ public class ParallelCircuitValue implements CircuitValue {
     private boolean isSolved = false;
     private boolean circuitResult;
     private boolean wasStopped = false;
+    private boolean resultIsWaiting = false;
     private BlockingQueue<BlockingQueueElement> finalQueue;
 
     public ParallelCircuitValue(Circuit circuit, List<ParallelCircuitValue> parallelCircuitValues) {
@@ -26,6 +27,7 @@ public class ParallelCircuitValue implements CircuitValue {
 
     private void startCalculations() {
         calculateNodeValue(circuit.getRoot(), 0, finalQueue);
+        resultIsWaiting = true;
     }
 
     private boolean getResultOrThrowException(boolean result, boolean isResultCalculated) throws ResultNotCalculatedException {
@@ -174,7 +176,7 @@ public class ParallelCircuitValue implements CircuitValue {
     }
 
     public void stop() {
-        if (isSolved) {
+        if (isSolved || wasStopped || resultIsWaiting) {
             return;
         }
         wasStopped = true;
