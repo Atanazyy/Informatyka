@@ -46,13 +46,14 @@ public class ParallelCircuitValue implements CircuitValue {
                     } else {
                         return getResultOrThrowException(results[2], isResultCalculated[2]);
                     }
-                } catch (ResultNotCalculatedException __) {
+                } catch (ResultNotCalculatedException e) {
                     if (getResultOrThrowException(results[1], isResultCalculated[1]) && getResultOrThrowException(results[2], isResultCalculated[2])) {
                         return true;
                     }
                     if (!getResultOrThrowException(results[1], isResultCalculated[1]) && !getResultOrThrowException(results[2], isResultCalculated[2])) {
                         return false;
                     }
+                    throw e;
                 }
             case NOT:
                 return !getResultOrThrowException(results[0], isResultCalculated[0]);
