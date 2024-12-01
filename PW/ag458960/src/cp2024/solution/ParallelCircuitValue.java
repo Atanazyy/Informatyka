@@ -14,10 +14,18 @@ public class ParallelCircuitValue implements CircuitValue {
     private boolean isSolved = false;
     private boolean circuitResult;
     private boolean wasStopped = false;
+    private BlockingQueue<BlockingQueueElement> finalQueue;
 
     public ParallelCircuitValue(Circuit circuit, List<ParallelCircuitValue> parallelCircuitValues) {
         this.circuit = new Circuit(circuit.getRoot());
         parallelCircuitValues.add(this);
+        finalQueue = new LinkedBlockingQueue<>();
+        calculatingThread = new Thread(() -> startCalculations());
+        calculatingThread.start();
+    }
+
+    private void startCalculations() {
+        calculateNodeValue(circuit.getRoot(), 0, finalQueue);
     }
 
     private boolean getResultOrThrowException(boolean result, boolean isResultCalculated) throws ResultNotCalculatedException {
@@ -155,11 +163,8 @@ public class ParallelCircuitValue implements CircuitValue {
             throw new InterruptedException("Solver was stopped");
         }
         else {
-            calculatingThread = Thread.currentThread();
-            BlockingQueue<BlockingQueueElement> queue = new LinkedBlockingQueue<>();
-            calculateNodeValue(circuit.getRoot(), 0, queue);
             try {
-                circuitResult = queue.take().value();
+                circuitResult = finalQueue.take().value();
                 isSolved = true;
             } finally {
                 calculatingThread = null;
