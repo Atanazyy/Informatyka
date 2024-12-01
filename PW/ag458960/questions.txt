@@ -1,0 +1,2 @@
+Can we assume that Circuit.getRoot() and other functions like get type wont take infinitely long? (Not like LeafNode.getValue() or getArgs()) 
+Can args of Node change over time?
