@@ -12,7 +12,7 @@ public class ParallelCircuitValue implements CircuitValue {
     private final Circuit circuit;
     Thread calculatingThread;
     private boolean isSolved = false;
-    private boolean circuitResult;
+    private BlockingQueueElement circuitResult;
     private boolean wasStopped = false;
     private boolean resultIsWaiting = false;
     private BlockingQueue<BlockingQueueElement> finalQueue;
@@ -160,20 +160,21 @@ public class ParallelCircuitValue implements CircuitValue {
     @Override
     public synchronized boolean getValue() throws InterruptedException {
         if (isSolved) {
-            return circuitResult;
+            return circuitResult.value();
         }
         if (wasStopped) {
-            throw new InterruptedException("Solver was stopped");
+            throw new InterruptedException();
         }
         else {
             try {
-                circuitResult = finalQueue.take().value();
+                circuitResult = finalQueue.take();
                 isSolved = true;
-            } finally {
+            } 
+            finally {
                 calculatingThread = null;
             }
         }
-        return circuitResult;
+        return circuitResult.value();
     }
 
     public void stop() {
