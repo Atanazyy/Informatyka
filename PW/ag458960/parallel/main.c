@@ -1,14 +1,12 @@
 #include <pthread.h>
 #include <stdlib.h>
-#include <stdio.h>
-//#include <time.h>
 #include <stdatomic.h>
 
 #include "common/io.h"
 #include "common/sumset.h"
 #include "common/err.h"
 
-#define BUFFER_SIZE 1000
+#define BUFFER_SIZE 5000
 #define MAX_DEPTH 2
 
 typedef struct SharedPointer SharedPointer;
@@ -30,51 +28,45 @@ typedef struct SharedData {
     Solution* best_solution;
     Element buffer[BUFFER_SIZE];
     pthread_mutex_t mutex;
-    pthread_cond_t is_not_full;
     pthread_cond_t is_not_empty;
     int num_elements;
     int num_of_idle_threads;
     bool is_finished;
-
-    //int cnt[8];
-    //double time_in_reference_solve[8];
-    atomic_int T;
 } SharedData;
 
+
+// Initializes shared_data and reads the input data.
 void shared_data_init(SharedData* shared_data) {
-    input_data_init(&shared_data->input_data, 2, 35, (int[]){0}, (int[]){1, 0});
-    //input_data_read(&shared_data->input_data);
+    input_data_read(&shared_data->input_data);
     shared_data->best_solution = (Solution*)malloc(sizeof(Solution));
     solution_init(shared_data->best_solution);
     pthread_mutex_init(&shared_data->mutex, NULL);
-    pthread_cond_init(&shared_data->is_not_full, NULL);
     pthread_cond_init(&shared_data->is_not_empty, NULL);
     shared_data->num_elements = 0;
     shared_data->num_of_idle_threads = 0;
     shared_data->is_finished = false;
 }
 
+// Frees the resources used by shared_data.
 void shared_data_free(SharedData* shared_data) {
     pthread_mutex_destroy(&shared_data->mutex);
-    pthread_cond_destroy(&shared_data->is_not_full);
     pthread_cond_destroy(&shared_data->is_not_empty);
     free(shared_data->best_solution);
 }
 
+// Adds element to stack
 void add_element(SharedData* shared_data, Element element) {
     pthread_mutex_lock(&shared_data->mutex);
-    while (shared_data->num_elements == BUFFER_SIZE) {
-        pthread_cond_wait(&shared_data->is_not_full, &shared_data->mutex);
-    }
     shared_data->buffer[shared_data->num_elements++] = element;
     pthread_cond_signal(&shared_data->is_not_empty);
     pthread_mutex_unlock(&shared_data->mutex);
 }
 
+// Gets element from stack
 int get_element(SharedData* shared_data, Element* element) {
     pthread_mutex_lock(&shared_data->mutex);
     shared_data->num_of_idle_threads++;
-    if(shared_data->num_of_idle_threads == shared_data->input_data.t) {
+    if(shared_data->num_of_idle_threads == shared_data->input_data.t && shared_data->num_elements == 0) {
         shared_data->is_finished = true;
         pthread_cond_broadcast(&shared_data->is_not_empty);
         pthread_mutex_unlock(&shared_data->mutex);
@@ -89,7 +81,6 @@ int get_element(SharedData* shared_data, Element* element) {
     }
     shared_data->num_of_idle_threads--;
     *element = shared_data->buffer[--shared_data->num_elements];
-    pthread_cond_signal(&shared_data->is_not_full);
     pthread_mutex_unlock(&shared_data->mutex);
     return 0;
 }
@@ -124,8 +115,7 @@ static void reference_solve(const Sumset* a, const Sumset* b, Solution* best_sol
     }
 }
 
-static void solve(SharedPointer* a, SharedPointer* b, Solution* best_solution, SharedData* shared_data, int T, int depth) {
-    //shared_data->cnt[T]++;
+static void solve(SharedPointer* a, SharedPointer* b, Solution* best_solution, SharedData* shared_data, int depth) {
     if (a->sumset.sum > b->sumset.sum) {
         SharedPointer* temp = a;
         a = b;
@@ -150,11 +140,7 @@ static void solve(SharedPointer* a, SharedPointer* b, Solution* best_solution, S
                 } else {
                     Sumset a_with_i_sumset;
                     sumset_add(&a_with_i_sumset, &a->sumset, i);
-                    //struct timespec start, end;
-                    //clock_gettime(CLOCK_MONOTONIC, &start);
                     reference_solve(&a_with_i_sumset, &b->sumset, best_solution, shared_data);
-                    //clock_gettime(CLOCK_MONOTONIC, &end);
-                    //shared_data->time_in_reference_solve[T] += (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
                 }
             }
         }
@@ -166,13 +152,6 @@ static void solve(SharedPointer* a, SharedPointer* b, Solution* best_solution, S
 
 void* calculate(void* data) {
     struct SharedData* shared_data = (struct SharedData*)data;
-
-    int T = 0;
-    //T = atomic_fetch_add(&shared_data->T, 1);
-    //int cnt = 0;
-    //double time = 0;
-    //double avg_depth = 0;
-    //struct timespec start, end;
 
     Solution* best_solution_local = (Solution*)malloc(sizeof(Solution));
     solution_init(best_solution_local);
@@ -188,16 +167,10 @@ void* calculate(void* data) {
                 free(best_solution_local);
             }
             pthread_mutex_unlock(&shared_data->mutex);
-            //printf("THREAD %d TOOK ITEM FROM STACK: %d TIMES IN %f SECONDS, AVG_DEPTH WAS %f\n", T, cnt, time, avg_depth / cnt);
             return 0;
         }
 
-        //clock_gettime(CLOCK_MONOTONIC, &start);
-        //cnt++;
-        //avg_depth += element.depth;
-        solve(element.a, element.b, best_solution_local, shared_data, T, element.depth);
-        //clock_gettime(CLOCK_MONOTONIC, &end);
-        //time += (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
+        solve(element.a, element.b, best_solution_local, shared_data, element.depth);
 
         decrement_ref_count(element.a);
         decrement_ref_count(element.b);
@@ -208,8 +181,14 @@ int main() {
     srand((unsigned)time(0));
     SharedData shared_data;
     shared_data_init(&shared_data);
-    atomic_init(&shared_data.T, 0);
-    
+
+    if(shared_data.input_data.t == 1) {
+        reference_solve(&shared_data.input_data.a_start, &shared_data.input_data.b_start, shared_data.best_solution, &shared_data);
+        solution_print(shared_data.best_solution);
+        shared_data_free(&shared_data);
+        return 0;
+    }
+
     Element start;
     start.a = (SharedPointer*)malloc(sizeof(SharedPointer));
     start.b = (SharedPointer*)malloc(sizeof(SharedPointer));
@@ -220,7 +199,8 @@ int main() {
     atomic_init(&start.b->ref_count, 1);
     start.a->prev = NULL;
     start.b->prev = NULL;
-    add_element(&shared_data, start);   
+    add_element(&shared_data, start);  
+
     pthread_t threads[shared_data.input_data.t];
     for (int i = 0; i < shared_data.input_data.t; i++) {
         ASSERT_ZERO(pthread_create(&threads[i], NULL, calculate, &shared_data));
@@ -229,14 +209,6 @@ int main() {
     for (int i = 0; i < shared_data.input_data.t; i++) {
         ASSERT_ZERO(pthread_join(threads[i], NULL));
     }
-    
-    //for (int i = 0; i < shared_data.input_data.t; i++) {
-    //    printf("THREAD %d CALCULATED SOLVE: %d\n", i, shared_data.cnt[i]);
-    //}
-
-    //for (int i = 0; i < shared_data.input_data.t; i++) {
-    //    printf("THREAD %d TIME IN REFERENCE SOLVE: %f\n", i, shared_data.time_in_reference_solve[i]);
-    //}
 
     solution_print(shared_data.best_solution);
     shared_data_free(&shared_data);

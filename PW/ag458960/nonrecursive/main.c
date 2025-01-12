@@ -10,8 +10,8 @@ static Solution best_solution;
 
 int main()
 {
-    // input_data_read(&input_data);
-    input_data_init(&input_data, 8, 25, (int[]){0}, (int[]){1, 0});
+    input_data_read(&input_data);
+    //input_data_init(&input_data, 8, 25, (int[]){0}, (int[]){1, 0});
 
     solution_init(&best_solution);
     
