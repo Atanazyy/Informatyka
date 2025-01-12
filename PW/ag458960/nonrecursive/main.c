@@ -1,22 +1,57 @@
 #include <stddef.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 #include "common/io.h"
 #include "common/sumset.h"
-#include "stack.h"
 
 static InputData input_data;
-
 static Solution best_solution;
+
+typedef struct Element {
+    Sumset* a;
+    Sumset* b;
+    int operation;
+} Element;
+
+typedef struct Stack {
+    Element *items;
+    int top;
+    int capacity;
+} Stack;
+
+void initStack(Stack *s, int capacity) {
+    s->items = (Element *)malloc(capacity * sizeof(Element));
+    s->top = -1;
+    s->capacity = capacity;
+}
+
+bool isEmpty(Stack *s) {
+    return s->top == -1;
+}
+
+void push(Stack *s, Element item) {
+    s->items[++(s->top)] = item;
+}
+
+Element pop(Stack *s) {
+    assert(!isEmpty(s));
+    return s->items[(s->top)--];
+}
+
+void freeStack(Stack *s) {
+    free(s->items);
+}
 
 int main()
 {
     input_data_read(&input_data);
-    //input_data_init(&input_data, 8, 25, (int[]){0}, (int[]){1, 0});
-
     solution_init(&best_solution);
+    Sumset Pool[5000];
+    int pointer = 0;
     
     Stack stack;
-    initStack(&stack, 1000);
+    initStack(&stack, 5000);
     Element start;
     start.a = &input_data.a_start;
     start.b = &input_data.b_start;
@@ -30,12 +65,12 @@ int main()
                 Sumset* temp = current.a;
                 current.a = current.b;
                 current.b = temp;
-                push(&stack, current);
-            } else if (is_sumset_intersection_trivial(current.a, current.b)) {
+            }
+            if (is_sumset_intersection_trivial(current.a, current.b)) {
                 for (size_t i = current.a->last; i <= input_data.d; ++i) {
                     if (!does_sumset_contain(current.b, i)) {
                         Element next;
-                        next.a = (Sumset *)malloc(sizeof(Sumset));
+                        next.a = &Pool[pointer++];
                         next.b = current.b;
                         next.operation = 0;
                         sumset_add(next.a, current.a, i);
@@ -54,7 +89,7 @@ int main()
             }
         }
         else {
-            free(current.a);
+            pointer--;
         }
     }
 
