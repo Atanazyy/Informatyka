@@ -2,6 +2,7 @@
 *.in
 *.out
 *.o
+*.zip
 tester.c
 .vscode
 build
